@@ -37,33 +37,10 @@ def main(page: ft.Page):
 
     # Tutti i TextField per le info necessarie per aggiungere una nuova automobile (marca, modello, anno, contatore posti)
     # TODO
-    txt_aggiungi_auto = ft.Text('Aggiungi Nuova Automobile', size=20)
-    input_marca = ft.TextField(label='Marca', width=150)
-    input_modello = ft.TextField(label='Modello', width=150)
-    input_anno = ft.TextField(label='Anno', width=150)
-    num_posti = ft.Text(value='4', size=18, weight=ft.FontWeight.BOLD)
-
-    def incrementa_posti(e):
-        try:
-            valore = int(num_posti.value)
-            num_posti.value = str(valore + 1)
-            page.update()
-        except:
-            alert.show_alert('Errore nel contare i posti')
-
-    def decrementa_posti(e):
-        try:
-            valore = int(num_posti.value)
-            if valore > 1:
-                num_posti.value = str(valore - 1)
-                page.update()
-        except:
-            alert.show_alert('Errore nel contare i posti')
-
-    btn_minus = ft.IconButton(icon=ft.Icons.REMOVE, on_click=decrementa_posti)
-    btn_plus = ft.IconButton(icon=ft.Icons.ADD, on_click=incrementa_posti)
-
-
+    marca_input = ft.TextField(label='Marca')
+    modello_input = ft.TextField(label='Modello')
+    anno_input = ft.TextField(label='Anno')
+    txt_posti = ft.Text(value='0', width=60, disabled=True, text_align=ft.TextAlign.CENTER)
 
     # --- FUNZIONI APP ---
     def aggiorna_lista_auto():
@@ -87,34 +64,24 @@ def main(page: ft.Page):
     # Handlers per la gestione dei bottoni utili all'inserimento di una nuova auto
     # TODO
     def aggiungi_auto(e):
-        marca = input_marca.value.strip()
-        modello = input_modello.value.strip()
-        anno_str = input_anno.value.strip()
-        posti_str = num_posti.value.strip()
-
-        if not marca or not modello or not anno_str or not posti_str:
-            alert.show_alert('Errore nei campi obbligatori')
-            return
-
         try:
-            anno = int(anno_str)
-            posti = int(posti_str)
-        except:
-            alert.show_alert('I valori dovrebbero essere numerici')
-            return
-
-        try:
-            autonoleggio.aggiungi_automobile(marca, modello, anno, posti)
-            input_marca.value = ''
-            input_modello.value = ''
-            input_anno.value = ''
-            num_posti.value = '4'
+            anno = int(anno_input.value)
+            posti = int(txt_posti.value)
+            autonoleggio.aggiungi_automobile(marca_input.value, modello_input.value, anno, posti)
+            marca_input.value = modello_input.value = anno_input.value = txt_posti.value = ''
             aggiorna_lista_auto()
-            page.update()
-        except Exception as err:
-            alert.show_alert(f'Errore: {err}')
+        except ValueError:
+            alert.show_alert("❌ Errore: inserisci valori numerici validi per anno e posti.")
 
+    def incrementa_posti(e):
+        current_val = txt_posti.value
+        txt_posti.value = f"{int(current_val) + 1}"
+        txt_posti.update()
 
+    def decrementa_posti(e):
+        current_val = txt_posti.value
+        txt_posti.value = f"{int(current_val) - 1}"
+        txt_posti.update()
 
     # --- EVENTI ---
     toggle_cambia_tema = ft.Switch(label="Tema scuro", value=True, on_change=cambia_tema)
@@ -122,7 +89,9 @@ def main(page: ft.Page):
 
     # Bottoni per la gestione dell'inserimento di una nuova auto
     # TODO
-    btn_aggiungi_auto = ft.ElevatedButton('Aggiungi Automobile', on_click=aggiungi_auto)
+    pulsante_aggiungi_auto = ft.ElevatedButton("Aggiungi automobile", on_click=aggiungi_auto)
+    pulsante_incrementa_posti = ft.IconButton(icon=ft.Icons.ADD, icon_color="green", on_click=incrementa_posti)
+    pulsante_decrementa_posti = ft.IconButton(icon=ft.Icons.REMOVE, icon_color="red", on_click=decrementa_posti)
 
     # --- LAYOUT ---
     page.add(
@@ -141,10 +110,13 @@ def main(page: ft.Page):
 
         # Sezione 3
         # TODO
-        txt_aggiungi_auto,
-        ft.Row(controls=[input_marca, input_modello, input_anno], alignment=ft.MainAxisAlignment.CENTER),
-        ft.Row(controls=[ft.Text('Numero Posti:', size=16), btn_minus, num_posti, btn_plus, btn_aggiungi_auto], alignment=ft.MainAxisAlignment.CENTER),
         ft.Divider(),
+        ft.Text("Aggiungi nuova automobile", size=20),
+        ft.Row(spacing=30,
+               controls=[marca_input, modello_input, anno_input,
+                         ft.Row([pulsante_decrementa_posti, txt_posti, pulsante_incrementa_posti])],
+               alignment=ft.MainAxisAlignment.CENTER),
+        pulsante_aggiungi_auto,
 
         # Sezione 4
         ft.Divider(),
